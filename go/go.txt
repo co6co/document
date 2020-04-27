@@ -1,0 +1,78 @@
+1. 环境变量
+	GO111MODULE=auto
+2.在当前目录下运行 命令行运行 go mod init + 模块名称 初始化模块
+	go mod init hello
+	会在当前项目目录下生成一个go.mod 文件，这是一个关键文件，之后的包的管理都是通过这个文件管理。
+	官方说明：除了go.mod之外，go命令还维护一个名为go.sum的文件，其中包含特定模块版本内容的预期加密哈希
+	go.mod和go.sum都应检入版本控制。go.sum 不需要手工维护，所以可以不用太关注
+	注意：子目录里是不需要init的，所有的子目录里的依赖都会组织在根目录的go.mod文件里
+
+3.引入并使用需要的包 比如：import "github.com/astaxie/beego"
+	按照过去的做法，要运行hello.go需要执行go get 命令 下载beego包到 $GOPATH/src
+	
+	现在 执行运行	go run hello.go
+	
+	稍等片刻… go 会自动查找代码中的包，下载依赖包，并且把具体的依赖关系和版本写入到go.mod和go.sum文件中。
+
+4.依赖的包下载到哪里了？还在GOPATH里吗？
+	使用Go的包管理方式，依赖的第三方包被下载到了$GOPATH/pkg/mod路径下
+	
+5.依赖包的版本是怎么控制的？
+	可以看到最终下载在$GOPATH/pkg/mod 下的包
+	在go.mod中没有指定，go命令会自动下载代码中的依赖的最新版本
+	在go.mod用require语句指定包和版本 ，go命令会根据指定的路径和版本下载包，
+	指定版本时可以用latest，这样它会自动下载指定包的最新版本；
+	发布者标记的版本号，格式为 vn.n.n (n代表数字
+	如果包的作者还没有标记版本，默认为 v0.0.0
+
+6.以把项目放在$GOPATH/src下吗？
+	但是go会根据GO111MODULE的值而采取不同的处理方式
+	默认情况下，GO111MODULE=auto 自动模式
+	auto 自动模式下，项目在$GOPATH/src里会使用$GOPATH/src的依赖包，
+		  在$GOPATH/src外，就使用go.mod 里 require的包
+	on 开启模式，1.12后，无论在$GOPATH/src里还是在外面，都会使用go.mod 里 require的包
+	off 关闭模式，就是老规矩。
+
+7.依赖包中的地址失效了怎么办？
+	以前的做法:
+		修改源码，用新路径替换import的地址
+		git clone 或 go get 新包后，copy到$GOPATH/src里旧的路径下无论什么方法，都不便于维护，特别是多人协同开发时。
+	
+	使用go.mod就简单了:
+	在go.mod文件里用 replace 替换包:比如：
+	replace golang.org/x/text => github.com/golang/text latest 
+	go会用 http://github.com/golang/text 替代http://golang.org/x/text，
+	原理就是下载http://github.com/golang/text 的最新版本到 $GOPATH/pkg/mod/golang.org/x/text下
+
+
+8.init生成的go.mod的模块名称有什么用
+	因为我们的项目已经不在$GOPATH/src里了，那么引用自己怎么办？就用模块名+路径
+	例如，在项目下新建目录 utils，创建一个tools.go文件:
+	//tools.go
+	package utils
+	import “fmt”
+	func PrintText(text string) {
+		fmt.Println(text)
+	}
+	
+	//在根目录下的hello.go文件就可以 import “hello/utils” 引用utils
+	//hello.go
+	package main
+
+	import (
+		"hello/utils"
+		"github.com/astaxie/beego"
+	)
+
+	func main() {
+		utils.PrintText("Hi")
+		beego.Run()
+	}
+	
+9.以前老项目如何用新的包管理
+	如果用auto模式，把项目移动到$GOPATH/src外
+	进入目录，运行 go mod init + 模块名称
+	go build 或者 go run 一次
+	
+10.goproxy.cn - 为中国 Go 语言开发者量身打造的模块代理
+	go env -w GOPROXY=https://goproxy.cn,direct
