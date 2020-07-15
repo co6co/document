@@ -1,0 +1,8 @@
+cd bin/
+./startup.sh 
+lsof -i:9090
+rz -E
+rm -rf *
+nginx -s reload
+nginx -c /etc/nginx/nginx.conf 
+nohup java -jar guns-jrzc-pay.jar --spring.profiles.active=proxy > /dev/null &
