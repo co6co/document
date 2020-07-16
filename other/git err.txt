@@ -1,0 +1,20 @@
+1.测试能不能联入22
+ssh -vT git@github.com 
+2.所有连接（包括远程 URL 的连接）必须以 "git" 用户进行。 
+   如果尝试以 GitHub 用户名连接，将会失败：
+   ssh -T GITHUB-USERNAME@github.com
+3. 如果连接失败且您通过 GitHub 用户名使用远程 URL，可以更改远程 URL 以使用 "git" 用户
+	ssh -T git@github.com
+4.确认公钥已附加到您的帐户 
+	ssh-agent -s
+	
+	
+	
+https://blog.csdn.net/yywan1314520/article/details/51566924
+1.git remote -v  
+	origin  git@github.com:co6co/go.git (fetch)
+	origin  git@github.com:co6co/go.git (push)
+2.
+3.创建公钥对
+	E:\Program Files\Git\usr\bin\ssh-keygen -t rsa -C “email”
+4.将公钥放置 github 的 sshkey的名字可以随便取
