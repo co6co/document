@@ -6,3 +6,6 @@ rm -rf *
 nginx -s reload
 nginx -c /etc/nginx/nginx.conf 
 nohup java -jar guns-jrzc-pay.jar --spring.profiles.active=proxy > /dev/null &
+
+nohup java -jar guns-vip-admin.jar --spring.profiles.active=prod > /dev/null &
+nohup java -jar guns-jrzc-pay.jar --spring.profiles.active=prod > /dev/null &
