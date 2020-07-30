@@ -9,3 +9,6 @@ nohup java -jar guns-jrzc-pay.jar --spring.profiles.active=proxy > /dev/null &
 
 nohup java -jar guns-vip-admin.jar --spring.profiles.active=prod > /dev/null &
 nohup java -jar guns-jrzc-pay.jar --spring.profiles.active=prod > /dev/null &
+
+nohup java -jar jrzc-admin.jar --spring.profiles.active=prod > /dev/null &
+nohup java -jar jrzc-pay.jar --spring.profiles.active=prod > /dev/null &
