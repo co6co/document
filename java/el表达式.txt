@@ -1,0 +1,26 @@
+${}是el表达式
+1.for
+	<c:forEach var="account" items="${accounts}">
+		<a href="post.html?id=${account.id}&amp;amount=-20.00">-$20</a>
+	</c:forEach>
+
+2.switch
+	<c:choose>
+		<c:when test="${userEntity.user_Authority_id == 'AAAAA'}"><!-- 如果 -->
+			<td>修改,删除</td>
+		</c:when>
+		<c:when test="${userEntity.user_Authority_id == 'AAAcb'}"><!-- 如果 -->
+			<td>修改,删除</td>
+		</c:when>
+		<c:otherwise> <!-- 否则 -->
+										
+		</c:otherwise>
+	</c:choose>
+
+3.if
+	<c:if test="${var.index % 2 == 0}"> 
+	* 
+	</c:if>
+	<c:if test="${model.id=='122356'&&model.type==1}">
+	*
+	</c:if>
