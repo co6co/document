@@ -1,0 +1,189 @@
+1.安装MySQL
+1.1	yum -y install wget
+1.2	wget http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
+1.3	yum localinstall -y mysql57-community-release-el7-7.noarch.rpm
+1.4	yum install -y mysql-community-server
+1.5	其他一些相关操作
+
+#systemctl status mysqld.service
+#systemctl start  mysqld.service
+#service mysqld restart	
+#grep "password" /var/log/mysqld.log   #找出root 密码
+输入初始密码，此时不能做任何事情，因为MYSQL默认必须修改密码才能正常使用
+#yum -y remove mysql57-community-release-el7-10.noarch  				#Yum Repository,以后每次 yum 操作都会自动更新，需要把这个卸载掉
+#mysql>GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '123456' WITH GRANT OPTION;
+#mysql>GRANT ALL PRIVILEGES ON *.* TO 'jack'@’10.10.50.127’ IDENTIFIED BY '654321' WITH GRANT OPTION;
+#mysql>flush privileges;
+#mysql>update user set host = '%' where user = 'root';
+#mysql>show variables like 'character_set%';  #查看字符集
+# vim /etc/my.cnf
+character-set-server=utf8
+
+alter user [用户名] indentified by [新密码]；		#修改密码
+set password('123455');       #红色部分是新密码		修改root 密码	不能修改
+>SHOW VARIABLES LIKE 'validate_password%';			#密码复杂度查看
+>mysql set password=PASSWORD('T-anjj-zdcl-122+');
+ALTER USER 'root'@'localhost' PASSWORD EXPIRE NEVER;
+flush privileges;
+1.6 开机启动
+[root@localhost ~]#  systemctl start mysqld.service
+[root@localhost ~]# 
+[root@localhost ~]#  systemctl stop mysqld.service
+[root@localhost ~]#  systemctl start mysqld.service
+[root@localhost ~]# systemctl enable mysqld
+[root@localhost ~]# systemctl daemon-reload
+
+警告 .Job for mysqld.service failed because the control process exited with error code. See "systemctl status mysqld.service" and "journalctl -xe" for details. 
+	你妹 根目录权限
+	chmod 755 /anjj
+
+cp -a /var/lib/mysql  /var/lib/data/mysql/
+cp -R 复制文件不复制权限
+chcon -R -t mysqld_db_t  /home/data/mysql	#修改 SELinux 属性
+
+
+cfdisk /dev/sdb
+pvcreate /dev/sdb1
+vgcreate database /dev/sdb1
+lvcreate -l 100%FREE -n db database
+mkfs.ext4 /dev/database/db
+mkdir /database
+mount /database
+mkdir /database/db
+chcon -Rt mysqld_db_t /database/db
+chcon -Ru system_u /database/db
+chown -R mysql:mysql /database/db
+systemctl start mariadb
+
+
+[root@boxy ~]# setenforce 1
+[root@boxy ~]# getenforce
+			   Enforcing
+root@boxy ~]# setenforce 0
+setenforce: SELinux is disabled
+[root@boxy ~]# setenforce 1
+setenforce: SELinux is disabled
+
+
+2.	安装java  
+2.1	删除默认安装的JDK
+# java -version    #检查默认的jdk 有没有安装
+# rpm -qa | grep java	#查看JDK信息 卸载（有几个卸载几个） 
+# rpm -e --nodeps java-x.x.x-gcj-compat-x.x.x.x-xxjpp.xxx	 #卸载1
+# rpm -e --nodeps java-x.x.x-openjdk-x.x.x.x-x.x.bxx.exx	#卸载2
+rpm -qa | grep gcj		#其他命令
+rpm -qa | grep jdk		#其他命令
+
+如果出现找不到openjdk source的话，那么还可以这样卸载
+yum -y remove java java-x.x.x-gcj-compat-x.x.x.x-xxjpp.xxx
+yum -y remove java java-x.x.x-openjdk-x.x.x.x-x.x.bxx.exx
+
+2.2 安装JDK
+首先到oracle官网下载jdk，
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+或者：
+#wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie"  http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz
+#tar -zxvf jdk-8u131-linux-x64.tar.gz
+#mv jdk1.8.0_131 /usr/local/		#移到自己安装第三方软件的常用文件夹中
+
+#vim /etc/profile		#配置环境 在文件尾部添加如下配置:
+	export JAVA_HOME=/usr/local/jdk1.8.0_131/
+	export CLASSPATH=.:$JAVA_HOME/jre/lib/rt.jar:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar 
+	export PATH=$PATH:$JAVA_HOME/bin
+
+#source /etc/profile		#通过source命令重新加载/etc/profile文件，使得修改后的内容在当前shell窗口有效
+#java -version		#查看一下jdk版本信息
+
+
+3.	安装 Tomcat
+3.1 简介
+Tomcat有Tomcat7，Tomcat8和Tomcat9等版本，目前企业使用较多的是Tomcat8
+Tomcat8下载网址https://tomcat.apache.org/download-80.cgi
+tar.gz：					Linux环境下的压缩包，免安装
+Windows.zip：				Windows压缩包，免安装，解压即用，同时注意根据自己电脑是64位系统还是32位系统下载对应的压缩包
+Windows Service Installer：	Windows安装包，32位和64位版本的Windows系统都适用
+
+3.2 安装
+apache-tomcat-8.5.47.tar.gz 放到指定目录，我这里放到/usr/local/tomcat
+#cd /usr/local/tomcat
+#tar -zxvf apache-tomcat-8.5.47.tar.gz
+#cd apache-tomcat-8.5.47/bin/
+#./startup.sh
+#ps -ef | grep tomcat		#检查是否启动成功
+
+3.3 防火墙相关命令
+#firewall-cmd --zone=public --add-port=8080/tcp --permanent	# 开启8080端口
+#firewall-cmd --query-port=8080/tcp							# 查询端口号8080是否开启
+#firewall-cmd --reload										# 重启防火墙
+#firewall-cmd --list-port									# 查看开放端口列表
+	--zone 					#作用域
+	--add-port=8080/tcp 	#添加端口，格式为：端口/通讯协议
+	--permanent 			#永久生效，没有此参数重启后失效
+#systemctl stop firewalld.service 	#停止firewall
+#systemctl disable firewalld.service #禁止firewall开机启动
+
+3.4	Tomcat开机启动
+3.4.1	创建setenv.sh文件
+catalina.sh在执行的时候会调用同级路径下的setenv.sh来设置额外的环境变量，
+因此在/usr/local/tomcat/apache-tomcat-8.5.47/bin 路径下创建setenv.sh文件，内容如下：
+	# 设置Tomcat的PID文件
+	CATALINA_PID="$CATALINA_BASE/tomcat.pid"
+	# 添加JVM选项
+	JAVA_OPTS="-server -XX:PermSize=256M -XX:MaxPermSize=1024m -Xms512M -Xmx1024M -XX:MaxNewSize=256m"
+
+3.4.2 catalina.sh 中增加配置
+在/usr/local/tomcat/apache-tomcat-8.5.47/bin/catalina.sh文件开头添加JAVA_HOME和JRE_HOME， 
+	export JAVA_HOME=/usr/local/jdk1.8.0_152		#jdk的安装目录 /usr/local/jdk1.8.0_131/
+	export JRE_HOME=/usr/local/jdk1.8.0_152/jre
+如果在catalina.sh不配置JAVA_HOME和JRE_HOME就会报如下的错误
+3.4.3 增加tomcat.service 文件 /usr/lib/systemd/system/tomcat.service 内容如下：
+	[Unit]
+	Description=Tomcat
+	After=network.target remote-fs.target nss-lookup.target
+	[Service]
+	Type=forking
+	TimeoutSec=0												#让开机启动不处理tomcat启动超时，保证tomcat耗时过长时不会被系统terminating
+	PIDFile=/usr/local/tomcat/apache-tomcat-8.5.47/tomcat.pid
+	ExecStart=/usr/local/tomcat/apache-tomcat-8.5.47/bin/startup.sh
+	ExecReload=/bin/kill -s HUP $MAINPID
+	ExecStop=/bin/kill -s QUIT $MAINPID
+	PrivateTmp=true
+	[Install]
+	WantedBy=multi-user.target
+
+#systemctl daemon-reload			#service文件修改后需要调用命令重新加载。 
+3.4.4 加入开启启动 
+#systemctl enable tomcat.service		#把Tomcat加入开机自启动
+3.4.5 查看开启启动命令
+systemctl list-unit-files | grep enabled		#查看开机启动列表命令
+	static：表示该服务与其他服务相关联,不能单独设置该服务的启动状态
+	disabled：表示禁止开机启动
+	enabled：表示允许开机启动
+	
+	
+	
+	
+
+ ps   -ef|grep admin| grep -v grep|awk  '{print $2}'
+ 
+ 
+ 
+ 安装nginx 
+ https://developer.aliyun.com/article/699966
+ 1.配置 EPEL源
+sudo yum install -y epel-release
+sudo yum -y update
+sudo yum install -y nginx
+2.相关目录
+	/usr/share/nginx/html
+	/etc/nginx/nginx.conf
+	/etc/nginx/conf.d/			#自定义配置文件目录
+	sudo firewall-cmd --permanent --zone=public --add-service=http
+sudo firewall-cmd --permanent --zone=public --add-service=https
+sudo firewall-cmd --reload
+
+systemctl start nginx
+systemctl stop nginx
+systemctl restart nginx
+systemctl enable[disabled] nginx 	#开机启动
+	

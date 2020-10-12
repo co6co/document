@@ -17,3 +17,8 @@
             e.printStackTrace();
         } 
     }
+	
+	1. ->  ::
+	这种[方法引用]或者说[双冒号运算]对应的参数类型是Function<T,R> T表示传入类型，R表示返回类型。
+	比如表达式person -> person.getAge(); 传入参数是person，返回值是person.getAge()，
+	那么方法引用Person::getAge就对应着Function<Person,Integer>类型。
