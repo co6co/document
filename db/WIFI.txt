@@ -1,0 +1,10 @@
+Aircrack-ng 	爆破
+reaver 			穷举 pin
+cowpatty 		hash table 采用GPU加速
+	cowpatty -d xxx.hash -r yyyyy.cap -s ESSID 
+	一个ssid对应一个hash table
+	# 制作字典 hash
+	genpmk -f 字典 -d 要生成的hash table -s ssid
+	
+3G ZerOne团队那个：http://pan.baidu.com/s/10yTUH
+33G那个：http://pan.baidu.com/s/13mjMH
